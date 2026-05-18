@@ -2,17 +2,18 @@ name: CI/CD — FasoLocal
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, develop]
   pull_request:
-    branches: [main]
+    branches: [master, develop]
 
 jobs:
-  # ─── Build & Lint ───────────────────────────────────────────────────────────
-  build:
-    name: Build & Lint
+  # ─── Staging: Build & Lint (develop branch + PRs targeting develop) ─────────
+  build-staging:
+    name: Build & Lint (Staging)
     runs-on: ubuntu-latest
-    outputs:
-      dist-artifact: ${{ steps.upload.outputs.artifact-id }}
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'develop')
 
     steps:
       - uses: actions/checkout@v4
@@ -28,37 +29,96 @@ jobs:
       - name: Lint
         run: npm run lint || true
 
-      - name: Build
-        run: npm run build
+      - name: Build (staging mode)
+        run: npm run build:staging
         env:
-          VITE_SUPABASE_URL:     ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
 
-      - name: Upload build artifact
-        id: upload
+      - name: Upload staging artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fasolocal-dist
+          name: fasolocal-staging-dist
           path: dist/
           retention-days: 1
 
-  # ─── Deploy to Vercel (main branch only) ────────────────────────────────────
-  deploy:
-    name: Deploy to Vercel
+  # ─── Deploy to Vercel Preview (develop push → staging URL) ──────────────────
+  deploy-staging:
+    name: Deploy to Vercel (Staging)
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download build artifact
+      - name: Download staging artifact
         uses: actions/download-artifact@v4
         with:
-          name: fasolocal-dist
+          name: fasolocal-staging-dist
           path: dist/
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (Preview)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token:      ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id:     ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          # No --prod flag → Vercel preview deployment (staging URL)
+
+  # ─── Production: Build & Lint (main branch + PRs targeting main) ────────────
+  build-prod:
+    name: Build & Lint (Production)
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'master')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint || true
+
+      - name: Build (production mode)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fasolocal-prod-dist
+          path: dist/
+          retention-days: 1
+
+  # ─── Deploy to Vercel Production (main push → fasolocal.com) ────────────────
+  deploy-prod:
+    name: Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: build-prod
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download production artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fasolocal-prod-dist
+          path: dist/
+
+      - name: Deploy to Vercel (Production)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token:      ${{ secrets.VERCEL_TOKEN }}
