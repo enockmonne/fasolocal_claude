@@ -140,8 +140,8 @@ Copy `.env.example` → `.env` and fill from Supabase dashboard > Settings > API
 ## Supabase setup (if not done yet)
 1. Create project at supabase.com (region: EU West / Paris)
 2. SQL Editor → run supabase/schema.sql
-3. SQL Editor → run supabase/seed.sql
-4. SQL Editor → run supabase/add-images.sql (adds image_url column)
+3. SQL Editor → run supabase/add-images.sql  ← MUST come before seed.sql (adds image_url column)
+4. SQL Editor → run supabase/seed.sql
 5. Storage → New bucket: product-images (public, 5MB limit)
 6. Auth → Settings → Site URL: http://localhost:3000 (update after Vercel deploy)
 7. Project Settings → API → copy URL + anon key to .env

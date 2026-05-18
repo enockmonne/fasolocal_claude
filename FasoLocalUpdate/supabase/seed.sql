@@ -1,6 +1,6 @@
 -- ============================================================
 -- FasoLocal — Seed Data
--- Run AFTER schema.sql in Supabase SQL Editor
+-- Run AFTER schema.sql AND add-images.sql in Supabase SQL Editor
 -- Uses fixed UUIDs so product → seller references always work
 -- ============================================================
 
@@ -95,7 +95,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ─── PRODUCTS ────────────────────────────────────────────────────────────────
 
-INSERT INTO products (name, slug, description, price, category, seller_id, badge, emoji, weight, stock, rating, review_count, image_url) VALUES
+INSERT INTO products (name, slug, description, price, category, seller_id, badge, emoji, weight, stock, rating, review_count) VALUES
 
   (
     'Miel Pur de Ouagadougou',

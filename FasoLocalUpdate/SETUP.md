@@ -38,9 +38,12 @@ In Supabase Dashboard → **SQL Editor** → **New query**:
 
 **3a. Run the schema** — paste the full contents of `supabase/schema.sql` and click **Run**
 
-**3b. Run the seed** — paste the full contents of `supabase/seed.sql` and click **Run**
+**3b. Add image column** — paste the full contents of `supabase/add-images.sql` and click **Run**
+(Must run before seed.sql — seed.sql inserts `image_url` values that require this column)
 
-**3c. Verify** — run this query to confirm:
+**3c. Run the seed** — paste the full contents of `supabase/seed.sql` and click **Run**
+
+**3d. Verify** — run this query to confirm:
 ```sql
 SELECT 'sellers' as tbl, count(*) FROM sellers
 UNION ALL SELECT 'products', count(*) FROM products
