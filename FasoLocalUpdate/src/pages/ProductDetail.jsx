@@ -1,19 +1,34 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import { PRODUCTS, BADGE_STYLES } from '@/lib/data'
+import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { getProductBySlug } from '@/lib/supabase'
 import { useCartStore } from '@/lib/store'
 import Badge from '@/components/ui/Badge'
 import ProductImage from '@/components/product/ProductImage'
+import Spinner from '@/components/ui/Spinner'
 
 export default function ProductDetail() {
-  const { id }     = useParams()
-  const navigate   = useNavigate()
-  const product    = PRODUCTS.find((p) => p.slug === id)
-  const addItem    = useCartStore((s) => s.addItem)
-  const [qty, setQty]     = useState(1)
+  const { id } = useParams()
+  const addItem = useCartStore((s) => s.addItem)
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
 
-  if (!product) return (
+  useEffect(() => {
+    setLoading(true)
+    setError(false)
+    setProduct(null)
+    getProductBySlug(id).then(({ data, error }) => {
+      if (error || !data) setError(true)
+      else setProduct(data)
+      setLoading(false)
+    })
+  }, [id])
+
+  if (loading) return <Spinner fullPage />
+
+  if (error || !product) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <div className="text-5xl mb-4">😕</div>
       <h2 className="text-xl font-extrabold text-faso-800 mb-3">Produit introuvable</h2>
@@ -42,7 +57,7 @@ export default function ProductDetail() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
 
-        {/* ── Left: image ──────────────────────────────────────────────────── */}
+        {/* Image */}
         <ProductImage
           src={product.imageUrl}
           emoji={product.emoji}
@@ -50,7 +65,7 @@ export default function ProductDetail() {
           className="rounded-2xl h-72 md:h-96 text-8xl w-full"
         />
 
-        {/* ── Right: info ──────────────────────────────────────────────────── */}
+        {/* Info */}
         <div>
           <Badge label={product.badge} />
 
@@ -74,8 +89,7 @@ export default function ProductDetail() {
           </p>
 
           {/* Meta strip */}
-          <div className="bg-faso-50 rounded-xl px-4 py-3 mb-5
-                          grid grid-cols-3 gap-3">
+          <div className="bg-faso-50 rounded-xl px-4 py-3 mb-5 grid grid-cols-3 gap-3">
             {[
               ['Vendeur',  product.seller],
               ['Poids',    product.weight],
@@ -121,9 +135,7 @@ export default function ProductDetail() {
             className={[
               'w-full py-3.5 rounded-xl text-base font-bold border-0 cursor-pointer',
               'transition-all duration-200',
-              added
-                ? 'bg-green-500 text-white'
-                : 'bg-faso-700 text-white hover:bg-faso-800',
+              added ? 'bg-green-500 text-white' : 'bg-faso-700 text-white hover:bg-faso-800',
             ].join(' ')}
           >
             {added ? '✓ Ajouté au panier !' : '🛒 Ajouter au panier'}

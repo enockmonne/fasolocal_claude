@@ -26,12 +26,20 @@ export const resetPassword = (email) =>
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
+const normalizeProduct = (p) => ({
+  ...p,
+  priceRaw: p.price,
+  imageUrl: p.image_url,
+  seller: p.sellers?.name ?? '',
+  reviews: p.review_count,
+})
+
 export const getProducts = async (filters = {}) => {
   let query = supabase.from('products').select('*, sellers(name, location)')
   if (filters.category) query = query.eq('category', filters.category)
   if (filters.search) query = query.ilike('name', `%${filters.search}%`)
   const { data, error } = await query.order('created_at', { ascending: false })
-  return { data, error }
+  return { data: data ? data.map(normalizeProduct) : null, error }
 }
 
 export const getProductBySlug = async (slug) => {
@@ -40,7 +48,7 @@ export const getProductBySlug = async (slug) => {
     .select('*, sellers(*)')
     .eq('slug', slug)
     .single()
-  return { data, error }
+  return { data: data ? normalizeProduct(data) : null, error }
 }
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
