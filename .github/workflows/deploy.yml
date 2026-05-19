@@ -1,5 +1,11 @@
 name: CI/CD — FasoLocal
 
+# Deployment is handled by Vercel's native GitHub integration:
+#   develop → Vercel preview URL (staging Supabase creds set in Vercel dashboard)
+#   master  → Vercel production URL (prod Supabase creds set in Vercel dashboard)
+#
+# This workflow only runs build + lint checks to catch errors before Vercel deploys.
+
 on:
   push:
     branches: [master, develop]
@@ -40,38 +46,6 @@ jobs:
           VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL_STAGING }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
 
-      - name: Upload staging artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fasolocal-staging-dist
-          path: FasoLocalUpdate/dist/
-          retention-days: 1
-
-  # ─── Deploy to Vercel Preview (develop push → staging URL) ──────────────────
-  deploy-staging:
-    name: Deploy to Vercel (Staging)
-    runs-on: ubuntu-latest
-    needs: build-staging
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download staging artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: fasolocal-staging-dist
-          path: FasoLocalUpdate/dist/
-
-      - name: Deploy to Vercel (Preview)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token:      ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id:     ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./FasoLocalUpdate
-          # No --prod flag → Vercel preview deployment (staging URL)
-
   # ─── Production: Build & Lint (master branch + PRs targeting master) ────────
   build-prod:
     name: Build & Lint (Production)
@@ -100,35 +74,3 @@ jobs:
         env:
           VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-
-      - name: Upload production artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fasolocal-prod-dist
-          path: FasoLocalUpdate/dist/
-          retention-days: 1
-
-  # ─── Deploy to Vercel Production (master push → fasolocal.com) ──────────────
-  deploy-prod:
-    name: Deploy to Vercel (Production)
-    runs-on: ubuntu-latest
-    needs: build-prod
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download production artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: fasolocal-prod-dist
-          path: FasoLocalUpdate/dist/
-
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token:      ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id:     ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./FasoLocalUpdate
-          vercel-args: '--prod'
