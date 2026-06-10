@@ -2,168 +2,155 @@
 
 ## Project
 Burkina Faso's first local-products e-commerce marketplace. Buyers purchase honey,
-crafts, cereals, cosmetics from verified local producers.
+crafts, cereals, cosmetics, Faso Dan Fani textiles from verified local producers.
 Language: French. Currency: FCFA (integers only, formatted with Intl.NumberFormat('fr-FR')).
 
-## Stack
-- **Frontend**: React 18 + Vite 5 + Tailwind CSS 3 + React Router v6
-- **State**: Zustand — useCartStore (persisted to localStorage) + useSearchStore (ephemeral)
-- **Backend**: Supabase — PostgreSQL 15, RLS, Storage, Auth, Edge Functions
-- **Hosting**: Vercel (frontend) + Supabase Cloud (backend)
-- **Payments**: CinetPay API (Orange Money + Moov Money) — NOT YET CODED
-- **CI/CD**: GitHub Actions → Vercel auto-deploy on push to `main`
+## Stack (actual code, as of 2026-06-10)
+- **Framework**: Next.js 16 (App Router) + React 18 + TypeScript
+- **Styling**: Tailwind CSS 3 (`tailwind.config.ts`)
+- **Database**: PostgreSQL + Prisma ORM (`prisma/schema.prisma`)
+- **Auth**: NextAuth.js v5 beta (Google OAuth + Credentials)
+- **State**: React Context — `CartContext`, `AuthContext` (not Zustand)
+- **Payments**: CinetPay (Orange Money + Moov Money + Coris Money) — **planned**.
+  Current `src/lib/stripe.ts` is leftover Stripe scaffold to be replaced.
+- **Hosting**: Vercel
+- **CI/CD**: GitHub Actions → Vercel auto-deploy on push to `master`
+
+> **Doc/code reconciliation:** PRD/TDD v1.0 describe a Vite + Zustand + Supabase
+> stack. That was the planning-phase choice; the code was built on Next.js + Prisma
+> instead. The old Vite source lives under `FasoLocalUpdate/` and
+> `files/fasolocal-v2-source/` for reference only — do not edit it. Source of
+> truth is `src/` at the repo root.
 
 ## Key commands
 ```bash
-npm run dev        # Dev server at http://localhost:3000
-npm run build      # Production build → dist/
-npm run preview    # Preview production build locally
-npm run lint       # ESLint
+npm run dev          # Next dev server at http://localhost:3000
+npm run build        # Production build
+npm run start        # Run production build
+npm run lint         # next lint
+npm run db:generate  # prisma generate
+npm run db:push      # push schema to DATABASE_URL
+npm run db:seed      # tsx prisma/seed.ts (seed file not yet written)
+npm run db:studio    # Prisma Studio
 ```
 
 ## Path aliases
 `@/` maps to `src/` — always use `@/components/...` not `../../components/...`
 
-## Complete file structure (all files that exist)
+## File structure (what exists today)
 ```
 src/
-  pages/
-    Home.jsx            ✅ Hero, featured products, category strip, trust strip
-    Shop.jsx            ✅ Full catalog, category pills + search via Zustand
-    ProductDetail.jsx   ✅ Image, desc, qty picker, add-to-cart, seller info
-    Cart.jsx            ✅ Item list, qty controls, order summary → /commande
-    Checkout.jsx        ✅ Address, phone, payment method, order submit
-    Sellers.jsx         ✅ Seller directory, join CTA
-    Connexion.jsx       ✅ Login — supabase.auth.signInWithPassword
-    Inscription.jsx     ✅ Signup — supabase.auth.signUp + email confirm state
-    MotDePasseOublie.jsx ✅ Password reset — supabase.auth.resetPasswordForEmail
-    NotFound.jsx        ✅ 404 with return link
+  app/
+    layout.tsx                       Root layout — wraps Auth + Cart + Toast providers
+    (shop)/page.tsx                  Homepage (route group)
+    (shop)/cart/page.tsx             Cart page
+    (shop)/checkout/page.tsx         Checkout page
+    (shop)/products/[id]/page.tsx    Product detail (dynamic route)
+    (shop)/account/orders/page.tsx   Order history
+    (shop)/account/settings/page.tsx Account settings
+    api/auth/route.ts                NextAuth handler
+    api/cart/route.ts                Cart API
+    api/orders/route.ts              Orders API
+    api/products/route.ts            Products API
   components/
-    layout/
-      Navbar.jsx        ✅ Sticky, search, cart badge, user dropdown, mobile menu
-      Footer.jsx        ✅ Multi-column, responsive
-      ProtectedRoute.jsx ✅ Redirects to /connexion if no session
-    product/
-      ProductCard.jsx   ✅ Tailwind, Badge, ProductImage, add-to-cart animation
-      ProductImage.jsx  ✅ <img> with skeleton loader + emoji fallback on error
-    ui/
-      Button.jsx        ✅ variant (primary/secondary/ghost/danger) + size + loading
-      Badge.jsx         ✅ Reads BADGE_STYLES from data.js
-      Spinner.jsx       ✅ fullPage mode used by Suspense fallback
-  hooks/
-    useSession.js       ✅ supabase.auth.getSession + onAuthStateChange subscription
+    layout/   Header, Footer, MobileNav, Sidebar
+    products/ ProductCard, ProductDetail, ProductGrid, ProductFilters, ProductSearch, ProductReviews
+    cart/     CartDrawer, CartItem, CartSummary
+    checkout/ CheckoutForm, ShippingForm, PaymentForm, OrderSummary
+    common/   Logo, SearchBar, Newsletter, Breadcrumbs
+    ui/       Button, Input, Badge, Modal, Toast, Skeleton
+  context/    AuthContext.tsx, CartContext.tsx
+  hooks/      useAuth, useCart, useProducts, useDebounce
   lib/
-    store.js            ✅ useCartStore (persist) + useSearchStore
-    data.js             ✅ PRODUCTS(12), CATEGORIES(6), SELLERS(12), BADGE_STYLES
-                           Each product has: id, name, slug, priceRaw, category,
-                           seller, badge, emoji, imageUrl, weight, stock, rating,
-                           reviews, description
-    supabase.js         ✅ Client + signUp/signIn/signOut/resetPassword +
-                           getProducts/getProductBySlug/createOrder helpers
-  App.jsx               ✅ React.lazy + Suspense for all 10 routes
-  main.jsx              ✅ BrowserRouter wrapper
-  index.css             ✅ Tailwind base + text-gradient-faso utility
-supabase/
-  schema.sql            ✅ Full DDL: 6 tables, indexes, RLS, triggers
-                           Tables: sellers, categories, products, user_profiles,
-                           orders, order_items, reviews
-  seed.sql              ✅ 12 sellers + 12 products with fixed UUIDs
-  add-images.sql        ✅ Migration: adds image_url column, updates all 12 products
-.github/
-  workflows/
-    deploy.yml          ✅ Build once → upload artifact → deploy to Vercel (main only)
-CLAUDE.md               ✅ This file
-SETUP.md                ✅ Full 11-step setup guide (Supabase + GitHub + Vercel)
-vercel.json             ✅ SPA rewrites + asset cache headers
+    db.ts        Prisma client singleton
+    auth.ts      NextAuth config (Credentials authorize stub — TODO real check)
+    stripe.ts    LEGACY — replace with CinetPay
+    utils.ts
+  services/   authService, cartService, orderService, productService
+  config/     site.ts, navigation.ts
+  styles/     globals.css (Tailwind directives; @import order fixed today)
+  types/      product.ts, cart.ts, order.ts, user.ts
+  utils/      cn.ts, formatCurrency.ts, validators.ts
+prisma/
+  schema.prisma   User, Address, Product, ProductImage, Producer, Order,
+                  OrderItem, Review + Role/PaymentMethod/PaymentStatus/OrderStatus enums
+postcss.config.js   Added today to unblock Tailwind processing
+next.config.ts
+tailwind.config.ts
+docs/
+  PRD.md   Product requirements
+  TDD.md   Technical design
 ```
 
-## Architecture decisions (don't change without discussion)
-- All data currently served from `src/lib/data.js` (static seed) — Phase 2 will swap
-  to live Supabase queries via the helpers already in supabase.js
-- Cart state is client-side only — no server round-trip on add-to-cart
-- RLS enforces multi-tenant isolation at DB layer — never bypass in app code
-- Supabase anon key is safe to expose in browser; service role key must NEVER appear
-  in frontend code
-- Product slugs are the canonical URL identifier (not numeric IDs)
-- All prices are integer FCFA — format with Intl.NumberFormat('fr-FR')
-- Tailwind for all layout/style — no new inline styles unless truly one-off
-- faso-* colour tokens (defined in tailwind.config.js) for brand colours
+## Database — Prisma models
+- `User` (Role: CUSTOMER | VENDOR | ADMIN), `Address`, `Producer`
+- `Product` (FCFA Int price, slug unique, ProductCategory enum, tags[], stock)
+- `ProductImage`, `Review`
+- `Order` (orderNumber unique, PaymentMethod, PaymentStatus, OrderStatus)
+- `OrderItem` (denormalized productName/productImage/price snapshot)
+- `PaymentMethod` enum includes ORANGE_MONEY, MOOV_MONEY, CORIS_MONEY, VISA,
+  MASTERCARD, CASH_ON_DELIVERY
+
+## Architecture decisions
+- **App Router with route groups** — `(shop)` groups public storefront routes
+- **Server Components by default** — opt into `'use client'` only when needed (cart, forms, modals)
+- **Prisma singleton** in `src/lib/db.ts` to avoid hot-reload connection storms
+- **Service layer** (`src/services/*`) wraps Prisma queries; route handlers call services
+- **All prices are integer FCFA** — format via `utils/formatCurrency.ts`
+- **Auth via NextAuth JWT sessions** — no DB sessions
+- **Authorization in the service layer** — no Supabase RLS; check role/ownership before mutating
+- **Tailwind only** for styling — no CSS-in-JS
 
 ## Code conventions
-- Functional components only — no class components
-- State co-located with the component that owns it; lift to Zustand only if 2+ components need it
-- French language throughout — all UI text and user-facing copy
-- Error messages in French, inline in the component (no toast library yet)
-- Page components use Tailwind; shared components use Tailwind + shared UI primitives
+- TypeScript strict; functional components only
+- Co-locate state with owning component; Context only when 2+ trees need it
+- French for all UI strings and user-facing copy
+- Server errors logged + returned as `{ error: string }` with proper status
+- Route handlers in `src/app/api/*/route.ts` thin — delegate to services
 
-## Current status: what's live vs what's stubbed
+## Current status
 
-### ✅ Working (Phase 1 complete)
-- All pages render with real static data from data.js
-- Cart persists across page refreshes
-- Category + search filtering works
-- Product images load from Unsplash URLs with emoji fallback
-- Auth pages (Connexion, Inscription, MotDePasseOublie) are wired to Supabase Auth
-- ProtectedRoute guards /panier and /commande
-- Navbar shows login/signup or user avatar+dropdown based on session
-- Checkout page collects address, phone, payment method (submit is stubbed)
-- CI/CD pipeline exists and deploys on push to main
-- Supabase schema + seed SQL ready to run
+### Working (today, 2026-06-10)
+- Homepage renders at http://localhost:3000 after fixing globals.css @import order
+  and adding `postcss.config.js`
+- Prisma schema complete and migratable
+- Layout providers (Auth/Cart/Toast) wired
+- API route handler files exist for auth, cart, orders, products
 
-### ⚠️  Stubbed / not yet wired (Phase 2 priorities in order)
+### Stubbed / unfinished
+1. **NextAuth `authorize()` returns null** — `src/lib/auth.ts:23` has the bcrypt-compare TODO
+2. **`src/lib/stripe.ts` is the wrong provider** — replace with CinetPay client
+3. **No prisma seed** — `npm run db:seed` fails until `prisma/seed.ts` is written
+4. **API route handlers likely thin/empty** — verify before relying on them
+5. **No auth pages yet** — `pages.signIn: '/auth/login'` is configured but routes don't exist
+6. **No vendor/admin dashboards** — Role enum exists but no UI
 
-1. **Shop.jsx + ProductDetail.jsx still use data.js** — supabase.js helpers exist
-   (getProducts, getProductBySlug) but pages don't call them yet. Need loading
-   and error states when swapping.
-
-2. **Checkout.jsx submit is simulated** — calls clearCart() after a 1s delay.
-   Needs: createOrder() → CinetPay Edge Function → payment_url redirect.
-
-3. **SellerDashboard page missing** — route /tableau-de-bord renders NotFound.
-   Needs: product CRUD table, Supabase Storage image upload, order management.
-
-4. **CinetPay not coded** — needs two Supabase Edge Functions:
-   - /functions/v1/create-payment  (calls CinetPay /payment API)
-   - /functions/v1/payment-webhook (verifies signature, updates orders)
-
-5. **Order history page missing** — /commandes renders NotFound.
-
-6. **No tests** — plan: Vitest for unit, Playwright for E2E in Phase 2.
-
-## Environment variables needed
+## Environment variables (see `.env.example`)
 ```
-VITE_SUPABASE_URL=https://[project-ref].supabase.co
-VITE_SUPABASE_ANON_KEY=[anon-key]
+DATABASE_URL=postgresql://...
+NEXTAUTH_SECRET=...
+NEXTAUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+# CinetPay (to add — replaces Stripe + Orange Money placeholders)
+CINETPAY_API_KEY=...
+CINETPAY_SITE_ID=...
+CINETPAY_SECRET_KEY=...
 ```
-Copy `.env.example` → `.env` and fill from Supabase dashboard > Settings > API.
-
-## Supabase setup (if not done yet)
-1. Create project at supabase.com (region: EU West / Paris)
-2. SQL Editor → run supabase/schema.sql
-3. SQL Editor → run supabase/seed.sql
-4. SQL Editor → run supabase/add-images.sql (adds image_url column)
-5. Storage → New bucket: product-images (public, 5MB limit)
-6. Auth → Settings → Site URL: http://localhost:3000 (update after Vercel deploy)
-7. Project Settings → API → copy URL + anon key to .env
-
-## GitHub + Vercel (if not done yet)
-See SETUP.md for the full 11-step guide.
-Short version:
-  git init && git add . && git commit -m "feat: FasoLocal v2 initial commit"
-  gh repo create fasolocal --public
-  git push -u origin main
-Then add 5 GitHub Secrets (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY,
-VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID).
 
 ## Phase roadmap
-- **Phase 1** ✅ Static frontend + Supabase schema + CI/CD + Auth + Design system
-- **Phase 2** 🔄 Live DB queries + seller dashboard + CinetPay integration
-- **Phase 3** ⏳ Reviews, PWA, analytics, WhatsApp notifications
-- **Phase 4** ⏳ i18n (Mooré + Dioula), React Native mobile app, real-time delivery
+- **Phase 1** ✅ Next.js scaffold + Prisma schema + page shells + homepage rendering
+- **Phase 2** 🔄 Wire real auth (bcrypt), seed DB, implement product/cart/order services,
+  swap Stripe → CinetPay, build auth pages
+- **Phase 3** ⏳ Vendor dashboard, admin moderation, reviews, image upload
+- **Phase 4** ⏳ i18n (Mooré + Dioula), PWA, WhatsApp/SMS notifications, mobile app
 
-## Key product decisions made
-- Backend: Supabase (chose over Convex — relational data, RLS, Storage, no lock-in)
-- Payments: CinetPay (Orange Money + Moov Money unified API for Burkina Faso)
-- Hosting: Vercel + Supabase Cloud
-- Images: Unsplash URLs in seed data; Supabase Storage for seller-uploaded photos
-- Design: mobile-first (70%+ mobile), Sora font, faso-* green palette
+## Key product decisions (current Next stack)
+- **Framework: Next.js over Vite** — SSR for SEO on product pages, server components
+  reduce client JS on low-bandwidth mobile (70%+ of users)
+- **DB: Postgres + Prisma over Supabase** — full control, no vendor lock-in;
+  trade-off is wiring auth/storage/authorization separately
+- **Payments: CinetPay over Stripe** — Stripe does not serve Burkina Faso buyers
+  paying with Orange Money / Moov Money. Stripe file is legacy and will be removed.
+- **Images: TBD** — Vercel Blob or S3 (no decision yet); Prisma `ProductImage.url` is just a string

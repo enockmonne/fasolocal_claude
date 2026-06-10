@@ -1,10 +1,12 @@
-name: CI/CD — FasoLocal
+name: CI — FasoLocal
 
-# Deployment is handled by Vercel's native GitHub integration:
-#   develop → Vercel preview URL (staging Supabase creds set in Vercel dashboard)
-#   master  → Vercel production URL (prod Supabase creds set in Vercel dashboard)
+# Deployment itself is handled by Vercel's native GitHub integration:
+#   develop → staging (Vercel Preview, aliased to fasolocal-staging.vercel.app)
+#   master  → production (Vercel Production)
 #
-# This workflow only runs build + lint checks to catch errors before Vercel deploys.
+# This workflow only runs typecheck + lint + build on every push and PR so
+# Vercel doesn't ship a broken build. Env vars are set in Vercel directly;
+# the build below uses placeholder values just to satisfy the compiler.
 
 on:
   push:
@@ -12,19 +14,10 @@ on:
   pull_request:
     branches: [master, develop]
 
-defaults:
-  run:
-    working-directory: ./FasoLocalUpdate
-
 jobs:
-  # ─── Staging: Build & Lint (develop branch + PRs targeting develop) ─────────
-  build-staging:
-    name: Build & Lint (Staging)
+  ci:
+    name: Typecheck, Lint, Build
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'develop')
-
     steps:
       - uses: actions/checkout@v4
 
@@ -32,45 +25,22 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: FasoLocalUpdate/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint || true
-
-      - name: Build (staging mode)
-        run: npm run build:staging
-        env:
-          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL_STAGING }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
-
-  # ─── Production: Build & Lint (master branch + PRs targeting master) ────────
-  build-prod:
-    name: Build & Lint (Production)
-    runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'master')
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: FasoLocalUpdate/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Generate Prisma client
+        run: npm run db:generate
 
       - name: Lint
-        run: npm run lint || true
+        run: npm run lint
+        continue-on-error: true
 
-      - name: Build (production mode)
+      - name: Build
         run: npm run build
         env:
-          VITE_SUPABASE_URL:      ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Build-time only. Runtime values come from Vercel env vars.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+          NEXTAUTH_SECRET: ci-build-placeholder
+          NEXTAUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
