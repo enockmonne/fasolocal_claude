@@ -79,10 +79,30 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Payment methods bar */}
+      <div className="border-t border-gray-800 bg-gray-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <span className="text-xs text-gray-600 mr-2">Paiements acceptés :</span>
+          {[
+            { label: 'Orange Money', dot: 'bg-orange-500', textColor: 'text-orange-400' },
+            { label: 'Moov Money', dot: 'bg-sky-500', textColor: 'text-sky-400' },
+            { label: 'Coris Money', dot: 'bg-emerald-500', textColor: 'text-emerald-400' },
+            { label: 'Visa', dot: 'bg-blue-600', textColor: 'text-blue-400' },
+            { label: 'Mastercard', dot: 'bg-red-500', textColor: 'text-red-400' },
+            { label: 'Livraison contre remboursement', dot: 'bg-amber-500', textColor: 'text-amber-400' },
+          ].map((p) => (
+            <span key={p.label} className={`flex items-center gap-1.5 text-xs font-medium ${p.textColor}`}>
+              <span className={`w-2 h-2 rounded-full ${p.dot}`} />
+              {p.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Bottom bar */}
-      <div className="border-t border-gray-800">
+      <div className="border-t border-gray-800 bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} FasoLocal. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} FasoLocal — La marketplace des produits locaux du Burkina Faso.</p>
           <div className="flex gap-4">
             {footerNav.legal.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-gray-300 transition-colors">
