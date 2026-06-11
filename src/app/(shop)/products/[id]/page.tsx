@@ -6,11 +6,12 @@ import ProductCard from '@/components/products/ProductCard';
 import { getProductBySlug, MOCK_PRODUCTS } from '@/lib/mockData';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = getProductBySlug(params.id);
+  const { id } = await params;
+  const product = getProductBySlug(id);
   if (!product) {
     return { title: 'Produit introuvable | FasoLocal' };
   }
@@ -20,12 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function ProductPage({ params }: Props) {
-  const product = getProductBySlug(params.id);
+export default async function ProductPage({ params }: Props) {
+  const { id } = await params;
+  const product = getProductBySlug(id);
 
   if (!product) return notFound();
 
-  // Related products: same category, excluding this one
   const related = MOCK_PRODUCTS
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
@@ -55,7 +56,6 @@ export default function ProductPage({ params }: Props) {
         <ProductDetail product={product} />
       </div>
 
-      {/* Related products */}
       {related.length > 0 && (
         <section className="mt-16 pt-10 border-t border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'var(--font-display)' }}>
