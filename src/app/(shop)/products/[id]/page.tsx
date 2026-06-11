@@ -1,46 +1,73 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import ProductDetail from '@/components/products/ProductDetail';
-import ProductReviews from '@/components/products/ProductReviews';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
+import ProductCard from '@/components/products/ProductCard';
+import { getProductBySlug, MOCK_PRODUCTS } from '@/lib/mockData';
 
 interface Props {
   params: { id: string };
 }
 
-// TODO: Replace with real data fetching
-async function getProduct(id: string) {
-  // const product = await productService.getProduct(id);
-  return null;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // const product = await getProduct(params.id);
+  const product = getProductBySlug(params.id);
+  if (!product) {
+    return { title: 'Produit introuvable | FasoLocal' };
+  }
   return {
-    title: `Produit | FasoLocal`,
-    description: `Découvrez ce produit local du Burkina Faso sur FasoLocal.`,
+    title: `${product.name} | FasoLocal`,
+    description: product.shortDescription,
   };
 }
 
-export default async function ProductPage({ params }: Props) {
-  // const product = await getProduct(params.id);
-  // if (!product) return notFound();
+export default function ProductPage({ params }: Props) {
+  const product = getProductBySlug(params.id);
+
+  if (!product) return notFound();
+
+  // Related products: same category, excluding this one
+  const related = MOCK_PRODUCTS
+    .filter((p) => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
+
+  const categoryLabels: Record<string, string> = {
+    agroalimentaire: 'Agroalimentaire',
+    cosmetiques: 'Cosmétiques & Karité',
+    artisanat: 'Artisanat',
+    textiles: 'Textiles',
+    'sante-bien-etre': 'Santé & Bien-être',
+    boissons: 'Boissons',
+    'cereales-farines': 'Céréales & Farines',
+    'epices-condiments': 'Épices & Condiments',
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <Breadcrumbs items={[
-        { label: 'Boutique', href: '/products' },
-        { label: 'Produit' },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Boutique', href: '/products' },
+          { label: categoryLabels[product.category] || product.category, href: `/products?category=${product.category}` },
+          { label: product.name },
+        ]}
+      />
 
-      {/* TODO: Pass real product data */}
-      {/* <ProductDetail product={product} /> */}
-      {/* <ProductReviews productId={params.id} /> */}
-
-      <div className="text-center py-20 text-gray-500">
-        <p className="text-4xl mb-3">🏗️</p>
-        <p className="font-semibold">Page produit en construction</p>
-        <p className="text-sm mt-1">Connectez votre base de données pour afficher les produits.</p>
+      <div className="mt-6">
+        <ProductDetail product={product} />
       </div>
+
+      {/* Related products */}
+      {related.length > 0 && (
+        <section className="mt-16 pt-10 border-t border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'var(--font-display)' }}>
+            Vous pourriez aussi aimer
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

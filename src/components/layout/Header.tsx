@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { mainNav } from '@/config/navigation';
 import { useCart } from '@/hooks/useCart';
 import SearchBar from '@/components/common/SearchBar';
@@ -13,7 +14,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-      {/* Top bar */}
+      {/* Announcement bar */}
       <div className="bg-green-800 text-white text-center text-xs py-1.5 px-4">
         <p>🚚 Livraison gratuite à Ouagadougou pour les commandes de plus de 25 000 FCFA</p>
       </div>
@@ -22,8 +23,9 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Mobile menu button */}
           <button
-            className="lg:hidden p-2 text-gray-600 hover:text-green-700"
+            className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] text-gray-600 hover:text-green-700 flex items-center justify-center"
             onClick={() => setMobileOpen(true)}
+            aria-label="Menu"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -32,7 +34,7 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-green-700 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-green-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">FL</span>
             </div>
             <span className="text-xl font-bold text-green-800 hidden sm:block">
@@ -75,24 +77,41 @@ export default function Header() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             {/* Account */}
-            <Link href="/account" className="p-2 text-gray-600 hover:text-green-700 transition-colors">
+            <Link
+              href="/account"
+              className="p-2.5 min-w-[44px] min-h-[44px] text-gray-600 hover:text-green-700 transition-colors flex items-center justify-center rounded-lg hover:bg-gray-50"
+              aria-label="Mon compte"
+            >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </Link>
 
-            {/* Cart */}
-            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-green-700 transition-colors">
+            {/* Cart with animated badge */}
+            <Link
+              href="/cart"
+              className="relative p-2.5 min-w-[44px] min-h-[44px] text-gray-600 hover:text-green-700 transition-colors flex items-center justify-center rounded-lg hover:bg-gray-50"
+              aria-label={`Panier — ${cart.itemCount} article${cart.itemCount !== 1 ? 's' : ''}`}
+            >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              {cart.itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-amber-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cart.itemCount}
-                </span>
-              )}
+              <AnimatePresence>
+                {cart.itemCount > 0 && (
+                  <motion.span
+                    key={cart.itemCount}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                    className="absolute -top-0.5 -right-0.5 bg-amber-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center pointer-events-none"
+                  >
+                    {cart.itemCount > 9 ? '9+' : cart.itemCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           </div>
         </div>

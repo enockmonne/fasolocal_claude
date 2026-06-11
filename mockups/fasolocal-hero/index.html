@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FasoLocal — Hero Section Redesign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'faso-green':  '#15803d',
+            'faso-green-dark': '#166534',
+            'faso-green-light': '#dcfce7',
+            'faso-gold':   '#f59e0b',
+            'faso-amber':  '#d97706',
+            'terracotta':  '#b45309',
+            'terracotta-dark': '#92400e',
+            'cream':       '#fef9f0',
+            'cream-dark':  '#fef3c7',
+          },
+          fontFamily: {
+            serif: ['Georgia', 'Cambria', '"Times New Roman"', 'serif'],
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.6s ease-out forwards',
+            'fade-in': 'fadeIn 0.7s ease-out forwards',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%':   { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%':   { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root {
+      --kente-gold: #f59e0b;
+      --kente-terra: #b45309;
+      --kente-green: #15803d;
+      --kente-dark:  #1c1917;
+    }
+
+    /* Kente-inspired geometric strip — repeating chevron/diamond pattern */
+    .kente-strip {
+      height: 10px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Crect width='40' height='10' fill='%23b45309'/%3E%3Cpolygon points='0,10 10,0 20,10' fill='%23f59e0b'/%3E%3Cpolygon points='20,10 30,0 40,10' fill='%23f59e0b'/%3E%3Cpolygon points='10,0 20,10 30,0' fill='%2315803d'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: 40px 10px;
+    }
+
+    /* Wider decorative kente bar */
+    .kente-bar {
+      height: 16px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='16'%3E%3Crect width='48' height='16' fill='%2392400e'/%3E%3Cpolygon points='0,16 12,0 24,16' fill='%23f59e0b'/%3E%3Cpolygon points='24,16 36,0 48,16' fill='%23f59e0b'/%3E%3Cpolygon points='12,0 24,16 36,0' fill='%2315803d'/%3E%3Crect x='0' y='14' width='48' height='2' fill='%23f59e0b' opacity='0.4'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: 48px 16px;
+    }
+
+    /* Subtle grain overlay via pseudo-element */
+    .hero-grain::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.06;
+      z-index: 1;
+    }
+
+    /* Staggered card animations */
+    .card-1 { opacity: 0; animation: fadeUp 0.55s ease-out 0.15s forwards; }
+    .card-2 { opacity: 0; animation: fadeUp 0.55s ease-out 0.28s forwards; }
+    .card-3 { opacity: 0; animation: fadeUp 0.55s ease-out 0.41s forwards; }
+    .card-4 { opacity: 0; animation: fadeUp 0.55s ease-out 0.54s forwards; }
+    .hero-text { opacity: 0; animation: fadeIn 0.7s ease-out 0.05s forwards; }
+
+    /* Custom scrollbar for card row on mobile */
+    .cards-scroll::-webkit-scrollbar { height: 4px; }
+    .cards-scroll::-webkit-scrollbar-track { background: #fef3c7; }
+    .cards-scroll::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+
+    /* Smooth font rendering */
+    body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    /* Price tab numbers */
+    .price-num { font-variant-numeric: tabular-nums; }
+
+    /* Subtle woven-mesh pattern for the right panel area on desktop */
+    @media (min-width: 1024px) {
+      .cards-panel-bg {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='1' fill='rgba(255,255,255,0.08)'/%3E%3C/svg%3E");
+        background-size: 20px 20px;
+        border-radius: 24px;
+        padding: 12px;
+      }
+    }
+
+    /* Product card hover ring */
+    .card-1:hover, .card-2:hover, .card-3:hover, .card-4:hover {
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25), 0 0 0 2px rgba(245,158,11,0.3);
+    }
+  </style>
+</head>
+<body class="bg-stone-100 min-h-screen">
+
+  <!-- ═══════════════════════════════════════════════
+       TOP NAVIGATION BAR (minimal, for context)
+  ═══════════════════════════════════════════════ -->
+  <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14">
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-faso-green flex items-center justify-center">
+            <span class="text-white font-bold text-sm">FL</span>
+          </div>
+          <span class="font-bold text-faso-green text-lg tracking-tight">Faso<span class="text-faso-gold">Local</span></span>
+        </div>
+        <!-- Nav links — hidden on mobile -->
+        <div class="hidden md:flex items-center gap-6 text-sm text-stone-600 font-medium">
+          <a href="#" class="hover:text-faso-green transition-colors">Boutique</a>
+          <a href="#" class="hover:text-faso-green transition-colors">Producteurs</a>
+          <a href="#" class="hover:text-faso-green transition-colors">Notre Mission</a>
+        </div>
+        <!-- Right actions -->
+        <div class="flex items-center gap-3">
+          <button class="hidden sm:flex text-sm font-medium text-stone-600 hover:text-faso-green transition-colors">Connexion</button>
+          <button class="bg-faso-green text-white text-sm font-semibold px-4 py-1.5 rounded-full hover:bg-faso-green-dark transition-colors">Panier (0)</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       HERO SECTION
+  ═══════════════════════════════════════════════ -->
+  <section class="relative overflow-hidden hero-grain" style="background: linear-gradient(135deg, #92400e 0%, #b45309 35%, #d97706 65%, #f59e0b 100%);">
+
+    <!-- Decorative circle — large, top-right, subtle -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-10" style="background: radial-gradient(circle, #fef9f0 0%, transparent 70%);"></div>
+    <!-- Decorative circle — small, bottom-left -->
+    <div class="absolute -bottom-12 -left-12 w-64 h-64 rounded-full opacity-10" style="background: radial-gradient(circle, #15803d 0%, transparent 70%);"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-0">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:min-h-[88vh] gap-10 lg:gap-12">
+
+        <!-- ── LEFT: Hero Text Panel ── -->
+        <div class="hero-text flex-1 lg:max-w-[52%] lg:py-16">
+
+          <!-- Eyebrow pill -->
+          <div class="inline-flex items-center gap-2 bg-white/20 border border-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-5" style="backdrop-filter: blur(4px);">
+            <span class="text-base leading-none">🇧🇫</span>
+            <span class="tracking-wide">FAIT AU BURKINA FASO</span>
+          </div>
+
+          <!-- Main headline -->
+          <h1 class="font-serif text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-4">
+            Découvrez<br>
+            l'Authenticité du<br>
+            <span class="text-faso-gold italic">Burkina Faso</span>
+          </h1>
+
+          <!-- Subheadline -->
+          <p class="text-base sm:text-lg leading-relaxed mb-6 max-w-md" style="color: rgba(254,249,240,0.85);">
+            Producteurs locaux certifiés. Produits authentiques.<br class="hidden sm:block">
+            Livraison rapide partout au pays.
+          </p>
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-wrap items-center gap-3 mb-8">
+            <button class="inline-flex items-center gap-2 bg-faso-gold text-white font-bold text-sm sm:text-base px-6 py-3 rounded-full shadow-lg hover:bg-faso-amber transition-all duration-200 hover:scale-105 active:scale-100">
+              Explorer la Boutique
+              <span class="text-lg">→</span>
+            </button>
+            <button class="inline-flex items-center gap-2 border-2 border-white/60 text-white font-semibold text-sm sm:text-base px-6 py-3 rounded-full hover:bg-white/10 transition-all duration-200">
+              Notre Mission
+            </button>
+          </div>
+
+          <!-- Payment trust signals -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-medium mr-1" style="color: rgba(254,249,240,0.6);">Paiement sécurisé via :</span>
+            <span class="inline-flex items-center gap-1 bg-orange-500/20 border border-orange-400/40 text-orange-200 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <span class="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+              Orange Money
+            </span>
+            <span class="inline-flex items-center gap-1 bg-sky-600/20 border border-sky-400/40 text-sky-200 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <span class="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
+              Moov Money
+            </span>
+            <span class="inline-flex items-center gap-1 bg-emerald-600/20 border border-emerald-400/40 text-emerald-200 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+              Coris Money
+            </span>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: Product Cards ── -->
+        <!-- Desktop: 2×2 grid — Mobile: horizontal scroll row -->
+        <div class="flex-1 lg:max-w-[46%] lg:py-10 relative cards-panel-bg">
+
+          <!-- Mobile scroll hint label -->
+          <p class="text-xs font-medium mb-3 lg:hidden" style="color: rgba(254,249,240,0.6);">Produits vedettes →</p>
+
+          <!-- Cards container -->
+          <div class="cards-scroll flex lg:grid lg:grid-cols-2 gap-3 overflow-x-auto pb-2 lg:pb-0 lg:overflow-visible snap-x snap-mandatory lg:snap-none">
+
+            <!-- Card 1: Miel Pur -->
+            <div class="card-1 snap-start flex-shrink-0 w-44 lg:w-auto bg-cream rounded-2xl p-4 shadow-xl shadow-black/25 flex flex-col gap-2 hover:-translate-y-1.5 transition-transform duration-200 cursor-pointer lg:translate-y-4">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                🍯
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-stone-800 text-sm leading-tight">Miel Pur de Brousse</p>
+                <p class="text-xs mt-0.5 font-medium" style="color: #15803d;">Apiculteurs du Sahel</p>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm price-num" style="color: #d97706;">3 500 <span class="font-normal text-stone-500 text-xs">FCFA</span></span>
+                <span class="text-xs font-semibold" style="color: #15803d;">Voir →</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Beurre de Karité -->
+            <div class="card-2 snap-start flex-shrink-0 w-44 lg:w-auto bg-cream rounded-2xl p-4 shadow-xl shadow-black/25 flex flex-col gap-2 hover:-translate-y-1.5 transition-transform duration-200 cursor-pointer">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0);">
+                🧴
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-stone-800 text-sm leading-tight">Beurre de Karité Bio</p>
+                <p class="text-xs mt-0.5 font-medium" style="color: #15803d;">Coopérative de Bobo</p>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm price-num" style="color: #d97706;">2 800 <span class="font-normal text-stone-500 text-xs">FCFA</span></span>
+                <span class="text-xs font-semibold" style="color: #15803d;">Voir →</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Faso Dan Fani -->
+            <div class="card-3 snap-start flex-shrink-0 w-44 lg:w-auto bg-cream rounded-2xl p-4 shadow-xl shadow-black/25 flex flex-col gap-2 hover:-translate-y-1.5 transition-transform duration-200 cursor-pointer lg:translate-y-4 relative">
+              <!-- "Populaire" badge -->
+              <span class="absolute -top-2 -right-2 bg-faso-green text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md z-10 hidden lg:block">★ Populaire</span>
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe);">
+                👗
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-stone-800 text-sm leading-tight">Tissu Faso Dan Fani</p>
+                <p class="text-xs mt-0.5 font-medium" style="color: #15803d;">Tisserands de Koudougou</p>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm price-num" style="color: #d97706;">8 500 <span class="font-normal text-stone-500 text-xs">FCFA</span></span>
+                <span class="text-xs font-semibold" style="color: #15803d;">Voir →</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Fonio Blanc -->
+            <div class="card-4 snap-start flex-shrink-0 w-44 lg:w-auto bg-cream rounded-2xl p-4 shadow-xl shadow-black/25 flex flex-col gap-2 hover:-translate-y-1.5 transition-transform duration-200 cursor-pointer">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #fef9c3, #fef08a);">
+                🌾
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-stone-800 text-sm leading-tight">Fonio Blanc Premium</p>
+                <p class="text-xs mt-0.5 font-medium" style="color: #15803d;">Producteurs du Sud-Ouest</p>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm price-num" style="color: #d97706;">1 200 <span class="font-normal text-stone-500 text-xs">FCFA</span></span>
+                <span class="text-xs font-semibold" style="color: #15803d;">Voir →</span>
+              </div>
+            </div>
+
+          </div><!-- /cards container -->
+
+          <!-- "Voir tous les produits" link on desktop -->
+          <div class="hidden lg:flex justify-end mt-3">
+            <a href="#" class="text-white/70 hover:text-white text-xs font-medium flex items-center gap-1 transition-colors">
+              Voir tous les produits
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+      </div><!-- /flex row -->
+    </div><!-- /container -->
+
+    <!-- Decorative dot grid — bottom right -->
+    <div class="absolute bottom-6 right-6 opacity-10 hidden lg:block" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 16px 16px; width: 112px; height: 80px;"></div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       KENTE GEOMETRIC ACCENT STRIP
+  ═══════════════════════════════════════════════ -->
+  <div class="kente-bar w-full"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       STAT STRIP
+  ═══════════════════════════════════════════════ -->
+  <div class="bg-faso-green">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row items-center justify-center sm:divide-x sm:divide-white/20 gap-3 sm:gap-0">
+
+        <!-- Stat 1 -->
+        <div class="flex flex-col items-center sm:px-8 text-center">
+          <span class="font-bold text-white text-2xl sm:text-3xl price-num">200<span class="text-faso-gold">+</span></span>
+          <span class="text-faso-green-light text-xs sm:text-sm font-medium mt-0.5 tracking-wide">Producteurs certifiés</span>
+        </div>
+
+        <!-- Stat 2 -->
+        <div class="flex flex-col items-center sm:px-8 text-center">
+          <span class="font-bold text-white text-2xl sm:text-3xl price-num">1 200<span class="text-faso-gold">+</span></span>
+          <span class="text-faso-green-light text-xs sm:text-sm font-medium mt-0.5 tracking-wide">Produits authentiques</span>
+        </div>
+
+        <!-- Stat 3 -->
+        <div class="flex flex-col items-center sm:px-8 text-center">
+          <span class="font-bold text-white text-2xl sm:text-3xl price-num">15 000<span class="text-faso-gold">+</span></span>
+          <span class="text-faso-green-light text-xs sm:text-sm font-medium mt-0.5 tracking-wide">Clients satisfaits</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECOND KENTE STRIP (closing flourish)
+  ═══════════════════════════════════════════════ -->
+  <div class="kente-strip w-full"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       BELOW HERO — Category strip (bonus context)
+  ═══════════════════════════════════════════════ -->
+  <section class="bg-white border-b border-stone-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <span class="text-stone-400 text-xs font-medium flex-shrink-0 mr-2">Explorer :</span>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">🍯 Miel &amp; Apiculture</a>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">🧴 Cosmétiques</a>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">👗 Textiles</a>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">🌾 Céréales &amp; Légumes</a>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">🪴 Artisanat</a>
+        <a href="#" class="flex-shrink-0 flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-faso-green bg-stone-100 hover:bg-faso-green-light px-4 py-2 rounded-full transition-colors">🫒 Huiles &amp; Épices</a>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
